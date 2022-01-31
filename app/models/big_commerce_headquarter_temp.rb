@@ -1,0 +1,2 @@
+class BigCommerceHeadquarterTemp < ApplicationRecord
+end
