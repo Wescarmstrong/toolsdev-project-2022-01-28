@@ -24,6 +24,9 @@
 			title: {
 				text: 'Highs/Lows Chart'
 			},
+            credits: {
+                enabled: false
+            },
 
 			series: seriesOptions
 		});
