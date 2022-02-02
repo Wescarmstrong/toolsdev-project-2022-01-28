@@ -14,12 +14,7 @@ class HomeController < ApplicationController
     # Get Weather data via external API
 
     #Get time and format for use in weather API request
-    # puts "TIME NOW : "
-    # puts Time.now.strftime("%Y-%m-%d")
-    # puts "TIME NOW MIDNIGHT -30: "
-    
-
-    currentTime = Time.now.strftime("%Y-%m-%d")
+    currentTime = (Time.now + 2.day).strftime("%Y-%m-%d")
     currentTimeMinus30Days = (Time.now.midnight - 30.day).strftime("%Y-%m-%d")
 
     uri = URI("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=d13f831881e94157a6c11348223001&q=30.40,-97.84&date=#{currentTimeMinus30Days}&enddate=#{currentTime}&tp=1&format=json")
@@ -44,9 +39,9 @@ class HomeController < ApplicationController
         dateReadyToCreate = parsedDate.strftime('%a %b %d %H:%M:%S %Z %Y')
 
         #only .create if record doesn't already exist
-        # if !BigCommerceHeadquarterTemp.exists?(:date => dateReadyToCreate)
-        #   BigCommerceHeadquarterTemp.create(:date => dateReadyToCreate, :temp => temp)
-        # end
+        if !BigCommerceHeadquarterTemp.exists?(:date => dateReadyToCreate)
+          BigCommerceHeadquarterTemp.create(:date => dateReadyToCreate, :temp => temp)
+        end
 
         i += 1
       end while i < data["data"]["weather"][n]["hourly"].size
@@ -72,37 +67,35 @@ class HomeController < ApplicationController
   # Get Objects from Model, pass to View
   def formatModelSendToView()
 
-    @BCHQTemp = BigCommerceHeadquarterTemp.all
-    # puts @BCHQTemp
-    # puts @BCHQTemp[0].date
-    # puts @BCHQTemp[0].temp
+    # @dataForView = BigCommerceHeadquarterTemp.all
+
+    @dataForView = BigCommerceHeadquarterTemp.where(date: (Time.now.midnight - 30.day)..Time.now)
+    # puts @dataForView
+
 
     # Format Model data for use with Highcharts
-
     chartArrayFormatted = []
     dataCounter = 0
     begin
-      # puts @BCHQTemp[dataCounter].date
-      # puts @BCHQTemp[dataCounter].temp
 
       # Create an array for each date/temp record
 
       #Check to see if there is any Data in database
-      if @BCHQTemp.size > 0
+      if @dataForView.size > 0
 
       singleHourTemp = []
 
       #Convert Unix Time - seconds -> ms
-      alteredDateFormat = @BCHQTemp[dataCounter].date.to_i * 1000
+      alteredDateFormat = @dataForView[dataCounter].date.to_i * 1000
 
-      singleHourTemp.push(alteredDateFormat, @BCHQTemp[dataCounter].temp)
+      singleHourTemp.push(alteredDateFormat, @dataForView[dataCounter].temp)
       chartArrayFormatted.push(singleHourTemp)
 
       dataCounter = dataCounter + 1
 
       end
 
-    end while dataCounter < @BCHQTemp.size
+    end while dataCounter < @dataForView.size
 
     @chartArrayFormatted = chartArrayFormatted
 

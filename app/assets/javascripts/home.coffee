@@ -5,7 +5,7 @@
     let highLowElement = document.getElementById('highs-lows_chart');
     let dataTestDB = JSON.parse(highLowElement.getAttribute('data-test'));
 
-    console.log("Number of database records: " + dataTestDB.length);
+    console.log("Number of database records received: " + dataTestDB.length);
    
     let historicalSeries = [];
 	historicalCounter = 0;
@@ -34,6 +34,7 @@
 
 			series: historicalSeries
 		});
+        console.log(historicalSeries);
 	}
 
 		function hSuccess(data, name) {
@@ -88,9 +89,6 @@
 		}
 		}
 
-    
-
-
 
     let hData = JSON.parse(JSON.stringify(dataTestDB));
     let numberOfIteration = hData.length / 3;
@@ -136,5 +134,6 @@
 
     success(highSeries, 'High')
     success(lowSeries, 'Low')
+
 
 });`
