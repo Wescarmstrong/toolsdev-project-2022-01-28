@@ -12,7 +12,7 @@ class HomeController < ApplicationController
 
   def getWeatherdata
     # Get Weather data via external API
-    uri = URI('https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=d13f831881e94157a6c11348223001&q=30.40,-97.84&date=2021-12-15&enddate=2022-01-15&tp=1&format=json')
+    uri = URI('https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=d13f831881e94157a6c11348223001&q=30.40,-97.84&date=2022-01-01&enddate=2022-01-31&tp=1&format=json')
     api_data = (Net::HTTP.get(uri))
 
     data = JSON[api_data]
@@ -33,7 +33,10 @@ class HomeController < ApplicationController
         parsedDate = DateTime.parse(formatedDayHour)
         dateReadyToCreate = parsedDate.strftime('%a %b %d %H:%M:%S %Z %Y')
 
-        # BigCommerceHeadquarterTemp.create(:date => dateReadyToCreate, :temp => temp)
+        #only .create if record doesn't already exist
+        if !BigCommerceHeadquarterTemp.exists?(:date => dateReadyToCreate)
+          BigCommerceHeadquarterTemp.create(:date => dateReadyToCreate, :temp => temp)
+        end
 
         i += 1
       end while i < data["data"]["weather"][n]["hourly"].size
