@@ -1,5 +1,6 @@
 require 'net/http'
 require 'Date'
+require_relative '../.api_key.rb'
 
 class HomeController < ApplicationController
   def index
@@ -17,7 +18,7 @@ class HomeController < ApplicationController
     currentTime = (Time.now + 2.day).strftime("%Y-%m-%d")
     currentTimeMinus30Days = (Time.now.midnight - 30.day).strftime("%Y-%m-%d")
 
-    uri = URI("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=d13f831881e94157a6c11348223001&q=30.40,-97.84&date=#{currentTimeMinus30Days}&enddate=#{currentTime}&tp=1&format=json")
+    uri = URI("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=#{$api_key}&q=30.40,-97.84&date=#{currentTimeMinus30Days}&enddate=#{currentTime}&tp=1&format=json")
     api_data = (Net::HTTP.get(uri))
 
     data = JSON[api_data]
