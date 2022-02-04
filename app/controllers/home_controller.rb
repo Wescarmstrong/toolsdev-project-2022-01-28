@@ -1,6 +1,5 @@
 require 'net/http'
 require 'date'
-# require_relative '../.api_key.rb'
 
 class HomeController < ApplicationController
   def index
@@ -19,10 +18,10 @@ class HomeController < ApplicationController
     currentTimeMinus30Days = (Time.now.midnight - 30.day).strftime("%Y-%m-%d")
     #TODO Use generated times above in URL request below
 
-    #TODO: make api key a secret
-    api_key = "d13f831881e94157a6c11348223001"
+    # Retrieves encrypted weather API key  
+    weather_api_key = Rails.application.credentials.weather_api_key
 
-    uri = URI("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=#{api_key}&q=30.40,-97.84&date=2022-01-01&enddate=2022-01-28&tp=1&format=json")
+    uri = URI("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=#{weather_api_key}&q=30.40,-97.84&date=2022-01-01&enddate=2022-01-28&tp=1&format=json")
     api_data = (Net::HTTP.get(uri))
 
     data = JSON[api_data]
