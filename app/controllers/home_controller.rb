@@ -15,10 +15,12 @@ class HomeController < ApplicationController
     # Get Weather data via external API
 
     #Get time and format for use in weather API request
-    currentTime = (Time.now + 2.day).strftime("%Y-%m-%d")
+    currentTime = (Time.now + 0.day).strftime("%Y-%m-%d")
     currentTimeMinus30Days = (Time.now.midnight - 30.day).strftime("%Y-%m-%d")
+    #TODO Use generated times above in URL request below
+  
 
-    uri = URI("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=#{$api_key}&q=30.40,-97.84&date=#{currentTimeMinus30Days}&enddate=#{currentTime}&tp=1&format=json")
+    uri = URI("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=#{$api_key}&q=30.40,-97.84&date=2022-01-01&enddate=2022-01-28&tp=1&format=json")
     api_data = (Net::HTTP.get(uri))
 
     data = JSON[api_data]
