@@ -1,5 +1,5 @@
 require 'net/http'
-require 'Date'
+require 'date'
 require_relative '../.api_key.rb'
 
 class HomeController < ApplicationController
