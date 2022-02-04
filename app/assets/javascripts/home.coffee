@@ -1,139 +1,111 @@
+$ ->
+  highLowElement = document.getElementById('highs-lows_chart')
+  dataTestDB = JSON.parse(highLowElement.getAttribute('data-test'))
 
-# Create chart after page loads
-`$(function () {
+  createHistoricalChart = ->
+    Highcharts.stockChart 'hourly_chart',
+      rangeSelector: selected: 4
+      title: text: 'Weather for Austin HQ'
+      credits: enabled: false
+      series: historicalSeries
+    console.log historicalSeries
+    return
 
-    let highLowElement = document.getElementById('highs-lows_chart');
-    let dataTestDB = JSON.parse(highLowElement.getAttribute('data-test'));
+  hSuccess = (data, name) ->
+    `var name`
+    name = name
+    i = historicalname.indexOf(name)
+    historicalSeries[i] =
+      name: name
+      data: data
+    historicalCounter += 1
+    if historicalCounter == historicalname.length
+      createHistoricalChart()
+    return
 
-    console.log("Number of database records received: " + dataTestDB.length);
-   
-    let historicalSeries = [];
-	historicalCounter = 0;
-	historicalname = ['historical'];
-    let highLowSeries = [];
-    let highSeries = [];
-    let lowSeries = [];
-	highLowSeriesCounter = 0;
-	highLowNames = ['High', 'Low'];
+  createHighLowChart = ->
+    Highcharts.stockChart 'highs-lows_chart',
+      rangeSelector: selected: 4
+      title: text: '3-Hour Highs and Lows'
+      credits: enabled: false
+      series: highLowSeries
+    return
 
-	
-	function createHistoricalChart() {
+  success = (data, name) ->
+    `var name`
+    name = name
+    i = highLowNames.indexOf(name)
+    highLowSeries[i] =
+      name: name
+      data: data
+    highLowSeriesCounter += 1
+    if highLowSeriesCounter == highLowNames.length
+      createHighLowChart()
+    return
 
-		Highcharts.stockChart('hourly_chart', {
+  buildMaxMinSeries = (threeSplicedTemps) ->
+    threeTemps = []
+    splicedTemps = threeSplicedTemps
 
-			rangeSelector: {
-				selected: 4
-			},
+    findMaxMinTemp = (obj) ->
+      threeHourDate = obj[0][0]
+      obj.forEach returnHighestTemp
+      maxMin = getMinMax(threeTemps)
+      maxArray = [
+        threeHourDate
+        maxMin[0]
+      ]
+      minArray = [
+        threeHourDate
+        maxMin[1]
+      ]
+      highSeries.push maxArray
+      lowSeries.push minArray
+      return
 
-			title: {
-				text: 'Weather for Austin HQ'
-			},
-            credits: {
-                enabled: false
-            },
+    returnHighestTemp = (item, index) ->
+      threeTemps.push item[1]
+      return
 
-			series: historicalSeries
-		});
-        console.log(historicalSeries);
-	}
+    getMinMax = (arr) ->
 
-		function hSuccess(data, name) {
-			var name = name
-			var i = historicalname.indexOf(name);
-			historicalSeries[i] = {
-			name: name,
-			data: data
-		};
+      Array::max = ->
+        Math.max.apply null, this
 
-		historicalCounter += 1;
+      Array::min = ->
+        Math.min.apply null, this
 
-		if (historicalCounter === historicalname.length) {
-			createHistoricalChart();
-		}
-		}
+      maximum = arr.max()
+      minimum = arr.min()
+      result = [
+        maximum
+        minimum
+      ]
+      result
 
-    hSuccess(dataTestDB, 'historical')
+    findMaxMinTemp splicedTemps
+    return
 
-	
-	function createHighLowChart() {
-
-		Highcharts.stockChart('highs-lows_chart', {
-
-			rangeSelector: {
-				selected: 4
-			},
-
-			title: {
-				text: '3-Hour Highs and Lows'
-			},
-            credits: {
-                enabled: false
-            },
-
-			series: highLowSeries
-		});
-	}
-
-		function success(data, name) {
-			var name = name
-			var i = highLowNames.indexOf(name);
-			highLowSeries[i] = {
-			name: name,
-			data: data
-		};
-
-		highLowSeriesCounter += 1;
-
-		if (highLowSeriesCounter === highLowNames.length) {
-			createHighLowChart();
-		}
-		}
-
-
-    let hData = JSON.parse(JSON.stringify(dataTestDB));
-    let numberOfIteration = hData.length / 3;
-
-    for (let i = 0; i < Math.floor(numberOfIteration); i +=1) {
-        let splicedData = hData.splice(0,3);
-        buildMaxMinSeries(splicedData);
-    }
-
-    function buildMaxMinSeries(threeSplicedTemps) {
-
-        let threeTemps = []
-        function findMaxMinTemp(obj) {
-            
-            let threeHourDate = obj[0][0];
-
-            obj.forEach(returnHighestTemp)
-            let maxMin = getMinMax(threeTemps);
-
-            let maxArray = [threeHourDate, maxMin[0]]
-            let minArray = [threeHourDate, maxMin[1]]
-
-        highSeries.push(maxArray);
-        lowSeries.push(minArray);
-            
-        };
-
-        function returnHighestTemp(item, index) {
-            threeTemps.push(item[1]);
-        };
-
-        function getMinMax(arr) {
-            let maximum = Math.max(...arr);
-            let minimum = Math.min(...arr);
-            let result =  ([maximum, minimum]); 
-            return result;
-        };
-
-        let splicedTemps = threeSplicedTemps
-        findMaxMinTemp(splicedTemps);
-
-    };
-
-    success(highSeries, 'High')
-    success(lowSeries, 'Low')
-
-
-});`
+  console.log 'Number of database records received: ' + dataTestDB.length
+  historicalSeries = []
+  historicalCounter = 0
+  historicalname = [ 'historical' ]
+  highLowSeries = []
+  highSeries = []
+  lowSeries = []
+  highLowSeriesCounter = 0
+  highLowNames = [
+    'High'
+    'Low'
+  ]
+  hSuccess dataTestDB, 'historical'
+  hData = JSON.parse(JSON.stringify(dataTestDB))
+  numberOfIteration = hData.length / 3
+  i = 0
+  while i < Math.floor(numberOfIteration)
+    splicedData = hData.splice(0, 3)
+    buildMaxMinSeries splicedData
+    i += 1
+  success highSeries, 'High'
+  success lowSeries, 'Low'
+  return
