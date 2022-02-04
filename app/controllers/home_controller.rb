@@ -21,11 +21,12 @@ class HomeController < ApplicationController
     # Retrieves encrypted weather API key  
     weather_api_key = Rails.application.credentials.weather_api_key
 
-    uri = URI("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=#{weather_api_key}&q=30.40,-97.84&date=2022-01-01&enddate=2022-01-28&tp=1&format=json")
+    uri = URI("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=#{weather_api_key}&q=30.40,-97.84&date=#{currentTimeMinus30Days}&enddate=#{currentTime}&tp=1&format=json")
     api_data = (Net::HTTP.get(uri))
 
     data = JSON[api_data]
 
+    # TODO: Check to see if number_of_days has a size/ exists before code below
     number_of_days = data["data"]["weather"].size
     n = 0
     begin
@@ -52,7 +53,6 @@ class HomeController < ApplicationController
       
       n += 1
     end while n < number_of_days
-    puts "Done"
   end
 
   #format day and hour values from weather APU, return combined string "YYYY-MM-DD HH"
