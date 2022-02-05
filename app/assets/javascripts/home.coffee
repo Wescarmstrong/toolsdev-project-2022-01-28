@@ -48,7 +48,7 @@ $ ->
     splicedTemps = threeSplicedTemps
 
     findMaxMinTemp = (obj) ->
-      threeHourDate = obj[0][0]
+      threeHourDate = obj[2][0]
       obj.forEach returnHighestTemp
       maxMin = getMinMax(threeTemps)
       maxArray = [

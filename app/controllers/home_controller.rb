@@ -14,7 +14,7 @@ class HomeController < ApplicationController
     # Get Weather data via external API
 
     #Get time and format for use in weather API request
-    currentTime = (Time.now + 0.day).strftime("%Y-%m-%d")
+    currentTime = (Time.now + 2.day).strftime("%Y-%m-%d")
     currentTimeMinus30Days = (Time.now.midnight - 30.day).strftime("%Y-%m-%d")
     #TODO Use generated times above in URL request below
 
@@ -73,35 +73,53 @@ class HomeController < ApplicationController
 
     # @dataForView = BigCommerceHeadquarterTemp.all
 
-    @dataForView = BigCommerceHeadquarterTemp.where(date: (Time.now.midnight - 30.day)..Time.now)
-    # puts @dataForView
+    @dataForView = BigCommerceHeadquarterTemp.where(date: (Time.now.midnight - 30.day)..Time.now + 2.day)
+    # puts "time -30:  #{Time.now.midnight - 30.day}"
+    # puts "time now:  #{Time.now + 2.day}"
+    # puts "dataForView:  #{@dataForView.size}"
+    # puts "dataForView zero:  #{@dataForView[0].date.to_i * 1000}"
+
+    # Order the database records, Highcharts requires data to be in correct order
+    @orderedResults = @dataForView.order('date ASC').limit(@dataForView.size)
+    puts "Ordered data first result:  #{@orderedResults[0].date.to_i * 1000}"
 
 
     # Format Model data for use with Highcharts
     chartArrayFormatted = []
     dataCounter = 0
-    begin
+
+    if @dataForView.size > 0
+      begin
 
       # Create an array for each date/temp record
-
-      #Check to see if there is any Data in database
-      if @dataForView.size > 0
-
+      # Check to see if there is any Data in database
       singleHourTemp = []
 
       #Convert Unix Time - seconds -> ms
-      alteredDateFormat = @dataForView[dataCounter].date.to_i * 1000
+      alteredDateFormat = @orderedResults[dataCounter].date.to_i * 1000
 
-      singleHourTemp.push(alteredDateFormat, @dataForView[dataCounter].temp)
+      singleHourTemp.push(alteredDateFormat, @orderedResults[dataCounter].temp)
       chartArrayFormatted.push(singleHourTemp)
 
       dataCounter = dataCounter + 1
 
-      end
+      
 
-    end while dataCounter < @dataForView.size
+      end while dataCounter < @orderedResults.size
+    end
+
+    # Ensure Data provided to View is divisible by 3
+    lengthOfData = chartArrayFormatted.length
+    if (lengthOfData % 3 == 0) 
+    elsif (lengthOfData % 3 == 1)
+      chartArrayFormatted.shift
+    else
+      chartArrayFormatted.shift(2)
+    end
+    
 
     @chartArrayFormatted = chartArrayFormatted
+    # puts @chartArrayFormatted[0]
 
   end
 
