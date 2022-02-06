@@ -1,5 +1,6 @@
 $ ->
 
+# Begin ajax request
 ajaxData = {}
 $.ajax '/indexajax',
   success: (data) ->
@@ -8,21 +9,28 @@ $.ajax '/indexajax',
   error: (data) ->
     console.log 'ajax error: ', data
 
+# Callback is required due to asynchronous nature of ajax
 callback = (data) ->
   ajaxDataCallback = data
   ajaxData = {}
   ajaxData = ajaxDataCallback
   
-
+  # Define a historical stockchart
   createHistoricalChart = ->
     Highcharts.stockChart 'hourly_chart',
       rangeSelector: selected: 4
       title: text: 'Weather for Austin HQ'
       credits: enabled: false
+      legend:
+        enabled: true
+        align: 'center'
+        verticalAlign: 'bottom'
       series: historicalSeries
+	# log the data provided to View, for troubleshooting purposes   
     console.log historicalSeries
     return
 
+  # Creates a historical stockchart
   historicalSuccess = (data, name) ->
     `var name`
     name = name
@@ -35,16 +43,21 @@ callback = (data) ->
       createHistoricalChart()
     return
 
+  # Define a High/Low stockchart
   createHighLowChart = ->
     Highcharts.stockChart 'highs-lows_chart',
       rangeSelector: selected: 4
       title: text: '3-Hour Highs and Lows'
       credits: enabled: false
+      legend:
+        enabled: true
+        align: 'center'
+        verticalAlign: 'bottom'
       series: highLowSeries
     return
 
+  # Creates a High/Low stockchart
   highLowsuccess = (data, name) ->
-    `var name`
     name = name
     i = highLowNames.indexOf(name)
     highLowSeries[i] =
@@ -55,13 +68,14 @@ callback = (data) ->
       createHighLowChart()
     return
 
+  # Calculate the High/Low temps within 3 hour time intervals
   buildMaxMinSeries = (threeSplicedTemps) ->
     threeTemps = []
     splicedTemps = threeSplicedTemps
 
     findMaxMinTemp = (obj) ->
       threeHourDate = obj[2][0]
-      obj.forEach returnHighestTemp
+      obj.forEach returnHighLowTemps
       maxMin = getMinMax(threeTemps)
       maxArray = [
         threeHourDate
@@ -75,7 +89,8 @@ callback = (data) ->
       lowSeries.push minArray
       return
 
-    returnHighestTemp = (item, index) ->
+	# Pushes High/Low temp within interval onto threeTemps array
+    returnHighLowTemps = (item, index) ->
       threeTemps.push item[1]
       return
 
@@ -100,7 +115,7 @@ callback = (data) ->
 
   historicalSeries = []
   historicalCounter = 0
-  historicalname = [ 'historical' ]
+  historicalname = [ 'Historical' ]
   highLowSeries = []
   highSeries = []
   lowSeries = []
@@ -110,10 +125,10 @@ callback = (data) ->
     'Low'
   ]
 
-
+  # Call methods to display charts
   callbackWeatherData = (data) ->
     weatherData = JSON.parse(data)
-    historicalSuccess weatherData, 'historical'
+    historicalSuccess weatherData, 'Historical'
 
     weatherData = JSON.parse(JSON.stringify(weatherData))
     numberOfIteration = weatherData.length / 3
@@ -126,28 +141,10 @@ callback = (data) ->
     highLowsuccess lowSeries, 'Low'
     return
 
-    # console.log("TEST ajaxData IN LIL SCOPE ", ajaxData)
-
+  # This can be changed and set up with ajax to setInterval for automatic asynchronous updates
   run = () ->
-    # console.log("run was called!")
     callbackWeatherData ajaxData
   setTimeout(run, 0)
 
-# runLater = () ->
-# console.log("runLater was called!")
-
-# $.ajax '/indexajax',
-#   success: (data) ->
-#     callback data
-#     console.log 'ajax succes: '
-#   error: (data) ->
-#     console.log 'ajax error: ', data
-
-#     # callbackWeatherData ajaxData
-# setInterval(runLater, 3000)
-
-
-#   $(document).ready -> console.log("Jquery is present")
-# $(document).ready -> console.log("ajaxData is present", ajaxData)
 
   

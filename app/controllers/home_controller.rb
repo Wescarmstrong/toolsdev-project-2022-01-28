@@ -10,16 +10,15 @@ class HomeController < ApplicationController
 
   def ajaxWeather
     getWeatherData()
-    @ajaxData = formatModelSendToView()
+    @ajaxData = formatModelForAjax()
   end
   
   def getWeatherData
     # Get Weather data via external API
 
-    #Get time and format for use in weather API request
+    # Format time for use in weather API request
     currentTime = (Time.now + 2.day).strftime("%Y-%m-%d")
     currentTimeMinus30Days = (Time.now.midnight - 30.day).strftime("%Y-%m-%d")
-    #TODO Use generated times above in URL request below
 
     # Retrieves encrypted weather API key  
     weather_api_key = Rails.application.credentials.weather_api_key
@@ -29,36 +28,39 @@ class HomeController < ApplicationController
 
     data = JSON[api_data]
 
-    # TODO: Check to see if number_of_days has a size/ exists before code below
     number_of_days = data["data"]["weather"].size
-    n = 0
-    begin
 
-      i = 0
+    # Make sure api call was successful before creating temp records
+    if number_of_days.size > 1  
+      n = 0
       begin
-        day = data["data"]["weather"][n]["date"]
-        hour = data["data"]["weather"][n]["hourly"][i]["time"]
-        temp = data["data"]["weather"][n]["hourly"][i]["tempF"]
 
-        # Format hour value from API
-        formatedDayHour = combineDayHour(day, hour)
+        i = 0
+        begin
+          day = data["data"]["weather"][n]["date"]
+          hour = data["data"]["weather"][n]["hourly"][i]["time"]
+          temp = data["data"]["weather"][n]["hourly"][i]["tempF"]
 
-        parsedDate = DateTime.parse(formatedDayHour)
-        dateReadyToCreate = parsedDate.strftime('%a %b %d %H:%M:%S %Z %Y')
+          # Format hour value from API
+          formatedDayHour = combineDayHour(day, hour)
 
-        #only .create if record doesn't already exist
-        if !BigCommerceHeadquarterTemp.exists?(:date => dateReadyToCreate)
-          BigCommerceHeadquarterTemp.create(:date => dateReadyToCreate, :temp => temp)
-        end
+          parsedDate = DateTime.parse(formatedDayHour)
+          dateReadyToCreate = parsedDate.strftime('%a %b %d %H:%M:%S %Z %Y')
 
-        i += 1
-      end while i < data["data"]["weather"][n]["hourly"].size
-      
-      n += 1
-    end while n < number_of_days
+          # Only .create if record doesn't already exist
+          if !BigCommerceHeadquarterTemp.exists?(:date => dateReadyToCreate)
+            BigCommerceHeadquarterTemp.create(:date => dateReadyToCreate, :temp => temp)
+          end
+
+          i += 1
+        end while i < data["data"]["weather"][n]["hourly"].size
+        
+        n += 1
+      end while n < number_of_days
+    end  
   end
 
-  #format day and hour values from weather APU, return combined string "YYYY-MM-DD HH"
+  # Format day and hour values from weather API, return combined string "YYYY-MM-DD HH"
   def combineDayHour(day, hour)
     if hour.size > 1
       hourFormated = hour.chomp("00")
@@ -71,34 +73,25 @@ class HomeController < ApplicationController
 
   end
 
-  # Get Objects from Model, pass to View
-  def formatModelSendToView()
-
-    # @dataForView = BigCommerceHeadquarterTemp.all
+  # Get records from Model, pass to View
+  def formatModelForAjax()
 
     @dataForView = BigCommerceHeadquarterTemp.where(date: (Time.now.midnight - 30.day)..Time.now + 2.day)
-    # puts "time -30:  #{Time.now.midnight - 30.day}"
-    # puts "time now:  #{Time.now + 2.day}"
-    # puts "dataForView:  #{@dataForView.size}"
-    # puts "dataForView zero:  #{@dataForView[0].date.to_i * 1000}"
 
     # Order the database records, Highcharts requires data to be in correct order
     @orderedResults = @dataForView.order('date ASC').limit(@dataForView.size)
-    puts "Ordered data first result:  #{@orderedResults[0].date.to_i * 1000}"
-
 
     # Format Model data for use with Highcharts
     chartArrayFormatted = []
     dataCounter = 0
 
     if @dataForView.size > 0
-      begin
-
       # Create an array for each date/temp record
       # Check to see if there is any Data in database
+      begin
       singleHourTemp = []
 
-      #Convert Unix Time - seconds -> ms
+      # Convert Unix Time from seconds -> ms
       alteredDateFormat = @orderedResults[dataCounter].date.to_i * 1000
 
       singleHourTemp.push(alteredDateFormat, @orderedResults[dataCounter].temp)
@@ -106,11 +99,10 @@ class HomeController < ApplicationController
 
       dataCounter = dataCounter + 1
 
-
       end while dataCounter < @orderedResults.size
     end
 
-    # Ensure Data provided to View is divisible by 3
+    # Ensure Data provided to View is correct length
     lengthOfData = chartArrayFormatted.length
     if (lengthOfData % 3 == 0) 
     elsif (lengthOfData % 3 == 1)
@@ -118,11 +110,9 @@ class HomeController < ApplicationController
     else
       chartArrayFormatted.shift(2)
     end
-    
 
     @chartArrayFormatted = chartArrayFormatted
 
   end
-
 
 end
