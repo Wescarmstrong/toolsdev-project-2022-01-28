@@ -4,7 +4,7 @@ require 'date'
 class HomeController < ApplicationController
   def index
 
-    # getWeatherData()
+    getWeatherData()
 
   end
 
