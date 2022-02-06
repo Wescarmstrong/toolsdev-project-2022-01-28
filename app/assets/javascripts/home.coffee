@@ -1,6 +1,18 @@
 $ ->
-  highLowElement = document.getElementById('highs-lows_chart')
-  dataTestDB = JSON.parse(highLowElement.getAttribute('data-test'))
+
+ajaxData = {}
+$.ajax '/indexajax',
+  success: (data) ->
+    callback data
+    console.log 'ajax succes: '
+  error: (data) ->
+    console.log 'ajax error: ', data
+
+callback = (data) ->
+  ajaxDataCallback = data
+  ajaxData = {}
+  ajaxData = ajaxDataCallback
+  
 
   createHistoricalChart = ->
     Highcharts.stockChart 'hourly_chart',
@@ -11,7 +23,7 @@ $ ->
     console.log historicalSeries
     return
 
-  hSuccess = (data, name) ->
+  historicalSuccess = (data, name) ->
     `var name`
     name = name
     i = historicalname.indexOf(name)
@@ -31,7 +43,7 @@ $ ->
       series: highLowSeries
     return
 
-  success = (data, name) ->
+  highLowsuccess = (data, name) ->
     `var name`
     name = name
     i = highLowNames.indexOf(name)
@@ -86,7 +98,6 @@ $ ->
     findMaxMinTemp splicedTemps
     return
 
-  console.log 'Number of database records received: ' + dataTestDB.length
   historicalSeries = []
   historicalCounter = 0
   historicalname = [ 'historical' ]
@@ -98,14 +109,45 @@ $ ->
     'High'
     'Low'
   ]
-  hSuccess dataTestDB, 'historical'
-  hData = JSON.parse(JSON.stringify(dataTestDB))
-  numberOfIteration = hData.length / 3
-  i = 0
-  while i < Math.floor(numberOfIteration)
-    splicedData = hData.splice(0, 3)
-    buildMaxMinSeries splicedData
-    i += 1
-  success highSeries, 'High'
-  success lowSeries, 'Low'
-  return
+
+
+  callbackWeatherData = (data) ->
+    weatherData = JSON.parse(data)
+    historicalSuccess weatherData, 'historical'
+
+    weatherData = JSON.parse(JSON.stringify(weatherData))
+    numberOfIteration = weatherData.length / 3
+    i = 0
+    while i < Math.floor(numberOfIteration)
+      splicedData = weatherData.splice(0, 3)
+      buildMaxMinSeries splicedData
+      i += 1
+    highLowsuccess highSeries, 'High'
+    highLowsuccess lowSeries, 'Low'
+    return
+
+    # console.log("TEST ajaxData IN LIL SCOPE ", ajaxData)
+
+  run = () ->
+    # console.log("run was called!")
+    callbackWeatherData ajaxData
+  setTimeout(run, 0)
+
+# runLater = () ->
+# console.log("runLater was called!")
+
+# $.ajax '/indexajax',
+#   success: (data) ->
+#     callback data
+#     console.log 'ajax succes: '
+#   error: (data) ->
+#     console.log 'ajax error: ', data
+
+#     # callbackWeatherData ajaxData
+# setInterval(runLater, 3000)
+
+
+#   $(document).ready -> console.log("Jquery is present")
+# $(document).ready -> console.log("ajaxData is present", ajaxData)
+
+  

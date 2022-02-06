@@ -4,13 +4,16 @@ require 'date'
 class HomeController < ApplicationController
   def index
 
-    getWeatherdata()
-
-    formatModelSendToView()
+    # getWeatherData()
 
   end
 
-  def getWeatherdata
+  def ajaxWeather
+    getWeatherData()
+    @ajaxData = formatModelSendToView()
+  end
+  
+  def getWeatherData
     # Get Weather data via external API
 
     #Get time and format for use in weather API request
@@ -103,7 +106,6 @@ class HomeController < ApplicationController
 
       dataCounter = dataCounter + 1
 
-      
 
       end while dataCounter < @orderedResults.size
     end
@@ -119,7 +121,6 @@ class HomeController < ApplicationController
     
 
     @chartArrayFormatted = chartArrayFormatted
-    # puts @chartArrayFormatted[0]
 
   end
 
