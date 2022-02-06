@@ -28,10 +28,12 @@ class HomeController < ApplicationController
 
     data = JSON[api_data]
 
+    puts "number_of_days before assign =:  #{data["data"]["weather"].size}"
     number_of_days = data["data"]["weather"].size
+    puts "number_of_days =:  #{number_of_days}"
 
     # Make sure api call was successful before creating temp records
-    if number_of_days.size > 1  
+    if number_of_days > 0  
       n = 0
       begin
 
